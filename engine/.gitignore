@@ -1,0 +1,28 @@
+# Build directory
+build/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+compile_commands.json
+
+# Compiled libraries
+*.a
+*.so
+*.dll
+*.dylib
+*.lib
+
+# Executables
+test_version
+*.exe
+
+# Object files
+*.o
+*.obj
+
+# Debug symbols
+*.pdb

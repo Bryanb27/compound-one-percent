@@ -1,0 +1,22 @@
+# React
+frontend/node_modules/
+frontend/dist/
+
+# ASP.NET
+backend/bin/
+backend/obj/
+
+# C Engine
+engine/build/
+
+# IDE
+.vscode/
+.vs/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
