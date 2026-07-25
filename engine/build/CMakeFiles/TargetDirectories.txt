@@ -1,0 +1,4 @@
+/home/bryan/Desktop/Codigos/compound-one-percent/engine/build/CMakeFiles/compound.dir
+/home/bryan/Desktop/Codigos/compound-one-percent/engine/build/CMakeFiles/test_version.dir
+/home/bryan/Desktop/Codigos/compound-one-percent/engine/build/CMakeFiles/edit_cache.dir
+/home/bryan/Desktop/Codigos/compound-one-percent/engine/build/CMakeFiles/rebuild_cache.dir

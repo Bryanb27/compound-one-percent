@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/test_version.dir/tests/test_version.c.o -o test_version  libcompound.a 

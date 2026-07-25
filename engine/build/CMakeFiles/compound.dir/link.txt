@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcompound.a CMakeFiles/compound.dir/src/compound.c.o
+/usr/bin/ranlib libcompound.a
