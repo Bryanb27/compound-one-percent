@@ -9,6 +9,7 @@ include_directories(include)
 
 add_library(compound STATIC
     src/compound.c
+    src/skill.c
 )
 
 add_executable(test_version
