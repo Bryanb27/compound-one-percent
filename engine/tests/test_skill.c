@@ -4,23 +4,29 @@
 
 int main(void)
 {
-    Skill* skill = skill_create(
-        "Backend",
-        "Backend Development",
-        100.0f
+    Skill* sql = skill_create(
+        "SQL",
+        "Database Language",
+        30.0f
     );
+    
+    Skill* backend = skill_create("Backend", "", 100.0f);
 
-    if (skill == NULL)
-    {
-        printf("Creation failed\n");
-        return 1;
-    }
+    printf("%d\n", skill_add_child(backend, backend));
 
-    printf("Name: %s\n", skill->name);
-    printf("Description: %s\n", skill->description);
-    printf("Progress: %.1f\n", skill->progress);
+    Skill* csharp = skill_create("C#", "", 50.0f);
 
-    skill_destroy(skill);
+    skill_add_child(backend, csharp);
+
+    printf("%d\n", skill_add_child(backend, csharp));
+
+    skill_add_child(backend, csharp);
+    skill_add_child(backend, sql);
+
+    printf("Backend has %zu children\n",
+        skill_child_count(backend));
+
+    skill_destroy(backend);
 
     return 0;
 }

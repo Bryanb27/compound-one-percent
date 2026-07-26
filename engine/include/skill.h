@@ -27,4 +27,8 @@ Skill* skill_create(
 
 void skill_destroy(Skill* skill);
 
+int skill_add_child(Skill* parent, Skill* child);
+
+size_t skill_child_count(const Skill* skill);
+
 #endif

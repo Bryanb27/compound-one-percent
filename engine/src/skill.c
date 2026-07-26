@@ -36,5 +36,88 @@ void skill_destroy(Skill* skill)
     if (skill == NULL)
         return;
 
+    for(size_t i = 0; i < skill->child_count; i++){
+        skill_destroy(skill->children[i]);
+    }
+
+    free(skill->children);
+
     free(skill);
+}
+
+size_t skill_child_count(const Skill* skill)
+{
+    if(skill == NULL){
+        return 0;
+    }
+
+    return skill->child_count;
+}
+
+static int skill_contains_child(const Skill* parent, const Skill* child){
+    if(parent == NULL || child == NULL){
+        return 0;
+    }
+
+    for(size_t i = 0; i < parent->child_count; i++){
+        if(parent->children[i] == child){
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int skill_is_ancestor(const Skill* node, const Skill* possible_ancestor){
+    const Skill* current = node;
+
+    while(current != NULL){
+        if(current == possible_ancestor){
+            return 1;
+        }
+        current = current->parent;
+    }
+
+    return 0;
+}
+
+int skill_add_child(Skill* parent, Skill* child){
+    if(parent == NULL || child == NULL){
+        return -1;
+    }
+
+    if(parent == child){
+        return -1;
+    }
+
+    if(child->parent != NULL){
+        return -1;
+    }
+
+    if(skill_contains_child(parent, child)){
+        return -1;
+    }
+
+    if(skill_is_ancestor(parent, child)){
+        return -1;
+    }
+
+    Skill** new_children = realloc(
+        parent->children,
+        (parent->child_count + 1) * sizeof(Skill*)
+    );
+
+    if(new_children == NULL){
+        return -1;
+    }
+
+    parent->children = new_children;
+
+    parent->children[parent->child_count] = child;
+
+    parent->child_count++;
+
+    child->parent = parent;
+
+    return 0;
 }
