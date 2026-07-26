@@ -7,6 +7,8 @@ typedef struct Skill Skill;
 
 struct Skill
 {
+    unsigned long id;
+    
     char name[64];
     char description[256];
 
@@ -36,6 +38,21 @@ float skill_progress(const Skill* skill);
 void skill_set_progress(
     Skill* skill,
     float progress
+);
+
+Skill* skill_find(
+    Skill* root,
+    const char* name
+);
+
+const Skill* skill_find_const(
+    const Skill* root,
+    const char* name
+);
+
+Skill* skill_find_by_id(
+    Skill* root,
+    unsigned long id
 );
 
 #endif

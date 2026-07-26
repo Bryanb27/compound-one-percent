@@ -1,4 +1,5 @@
 #include "skill.h"
+#include "id_generator.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -14,6 +15,8 @@ Skill* skill_create(
     if (skill == NULL)
         return NULL;
 
+    skill->id = generate_id();
+    
     strncpy(skill->name, name, sizeof(skill->name) - 1);
     skill->name[sizeof(skill->name) - 1] = '\0';
 
@@ -167,4 +170,66 @@ float skill_progress(const Skill* skill)
         return 0.0f;
 
     return weighted_progress / total_weight;
+}
+
+Skill* skill_find(
+    Skill* root,
+    const char* name
+)
+{
+    if(root == NULL || name == NULL){
+        return NULL;
+    }
+
+    if(strcmp(root->name, name) == 0){
+        return root;
+    }
+
+    for(size_t i = 0; i < root->child_count; i++){
+        Skill* result =
+            skill_find(root->children[i], name);
+
+        if(result != NULL){
+            return result;
+        }
+    }
+
+    return NULL;
+}
+
+const Skill* skill_find_const(
+    const Skill* root,
+    const char* name
+)
+{
+    return skill_find(
+        (Skill*)root,
+        name
+    );
+}
+
+Skill* skill_find_by_id(
+    Skill* root,
+    unsigned long id
+)
+{
+    if (root == NULL)
+        return NULL;
+
+    if (root->id == id)
+        return root;
+
+    for (size_t i = 0; i < root->child_count; i++)
+    {
+        Skill* result =
+            skill_find_by_id(
+                root->children[i],
+                id
+            );
+
+        if (result != NULL)
+            return result;
+    }
+
+    return NULL;
 }

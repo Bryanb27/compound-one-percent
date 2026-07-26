@@ -28,9 +28,43 @@ int main(void)
     skill_add_child(backend, csharp);
     skill_add_child(backend, sql);
 
+    printf("Program started\n");
+
+    Skill* result =
+    skill_find(backend, "SQL");
+
+    printf("Search finished\n");
+
+    if (result != NULL)
+    {
+        printf("%s\n", result->name);
+    }
+
+    Skill* missing = skill_find(backend, "Rust");
+
+    if (missing == NULL)
+    {
+        printf("Rust not found\n");
+    }
+
     printf(
         "Backend Progress: %.2f%%\n",
         skill_progress(backend)
+    );
+
+    printf(
+        "C# ID: %lu\n",
+        csharp->id
+    );
+
+    result = skill_find_by_id(
+        backend,
+        csharp->id
+    );
+
+    printf(
+        "Found: %s\n",
+        result->name
     );
 
     skill_destroy(backend);
