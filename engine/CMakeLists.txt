@@ -12,8 +12,8 @@ add_library(compound STATIC
     src/skill.c
 )
 
-add_executable(test_version
-    tests/test_version.c
+add_executable(test_skill
+    tests/test_skill.c
 )
 
-target_link_libraries(test_version compound)
+target_link_libraries(test_skill compound)

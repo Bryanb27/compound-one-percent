@@ -19,4 +19,12 @@ struct Skill
     size_t child_count;
 };
 
+Skill* skill_create(
+    const char* name,
+    const char* description,
+    float weight
+);
+
+void skill_destroy(Skill* skill);
+
 #endif
