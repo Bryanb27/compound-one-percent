@@ -10,7 +10,7 @@ struct Skill
     char name[64];
     char description[256];
 
-    float progress;
+    float self_progress;
     float weight;
 
     Skill* parent;
@@ -30,5 +30,12 @@ void skill_destroy(Skill* skill);
 int skill_add_child(Skill* parent, Skill* child);
 
 size_t skill_child_count(const Skill* skill);
+
+float skill_progress(const Skill* skill);
+
+void skill_set_progress(
+    Skill* skill,
+    float progress
+);
 
 #endif

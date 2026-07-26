@@ -20,7 +20,7 @@ Skill* skill_create(
     strncpy(skill->description, description, sizeof(skill->description) - 1);
     skill->description[sizeof(skill->description) - 1] = '\0';
 
-    skill->progress = 0.0f;
+    skill->self_progress = 0.0f;
     skill->weight = weight;
 
     skill->parent = NULL;
@@ -120,4 +120,51 @@ int skill_add_child(Skill* parent, Skill* child){
     child->parent = parent;
 
     return 0;
+}
+
+void skill_set_progress(
+    Skill* skill,
+    float progress
+)
+{
+    if(skill == NULL){
+        return;
+    }
+
+    if(progress < 0.0f){
+        progress = 0.0f;
+    }
+
+    if(progress > 100.0f){
+        progress = 100.0f;
+    }
+
+    skill->self_progress = progress;
+}
+
+float skill_progress(const Skill* skill)
+{
+    if (skill == NULL)
+        return 0.0f;
+
+    if (skill->child_count == 0)
+        return skill->self_progress;
+
+    float total_weight = 0.0f;
+    float weighted_progress = 0.0f;
+
+    for (size_t i = 0; i < skill->child_count; i++)
+    {
+        Skill* child = skill->children[i];
+
+        total_weight += child->weight;
+
+        weighted_progress +=
+            skill_progress(child) * child->weight;
+    }
+
+    if (total_weight == 0.0f)
+        return 0.0f;
+
+    return weighted_progress / total_weight;
 }
