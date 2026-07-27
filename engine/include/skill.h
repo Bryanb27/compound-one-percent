@@ -1,6 +1,8 @@
 #ifndef SKILL_H
 #define SKILL_H
 
+#include "skill_metadata.h"
+
 #include <stddef.h>
 
 typedef struct Skill Skill;
@@ -19,6 +21,11 @@ struct Skill
 
     Skill** children;
     size_t child_count;
+
+    SkillCategory category;
+    SkillStatus status;
+    unsigned int estimated_hours;
+    unsigned int study_sessions;
 };
 
 Skill* skill_create(
@@ -40,6 +47,20 @@ void skill_set_progress(
     float progress
 );
 
+void skill_set_category(
+    Skill* skill,
+    SkillCategory category
+);
+
+void skill_set_status(
+    Skill* skill,
+    SkillStatus status
+);
+
+void skill_add_study_session(
+    Skill* skill
+);
+
 Skill* skill_find(
     Skill* root,
     const char* name
@@ -53,6 +74,11 @@ const Skill* skill_find_const(
 Skill* skill_find_by_id(
     Skill* root,
     unsigned long id
+);
+
+int skill_remove_child(
+    Skill* parent,
+    Skill* child
 );
 
 #endif

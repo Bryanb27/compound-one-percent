@@ -67,6 +67,35 @@ int main(void)
         result->name
     );
 
+    skill_set_category(
+        csharp,
+        SKILL_CATEGORY_LANGUAGE
+    );
+
+    skill_add_study_session(csharp);
+
+    skill_add_study_session(csharp);
+
+    printf(
+        "Sessions: %u\n",
+        csharp->study_sessions
+    );
+
+    printf("Children: %zu\n",
+    skill_child_count(backend));
+
+    skill_remove_child(backend, sql);
+
+    printf("Children: %zu\n",
+        skill_child_count(backend));
+
+    Skill* found = skill_find(backend, "SQL");
+
+    if (found == NULL)
+    {
+        printf("SQL removed successfully.\n");
+    }
+
     skill_destroy(backend);
 
     return 0;

@@ -31,6 +31,14 @@ Skill* skill_create(
     skill->children = NULL;
     skill->child_count = 0;
 
+    skill->category = SKILL_CATEGORY_NONE;
+
+    skill->status = SKILL_STATUS_NOT_STARTED;
+
+    skill->estimated_hours = 0;
+
+    skill->study_sessions = 0;
+
     return skill;
 }
 
@@ -55,6 +63,38 @@ size_t skill_child_count(const Skill* skill)
     }
 
     return skill->child_count;
+}
+
+void skill_set_category(
+    Skill* skill,
+    SkillCategory category
+){
+    if(skill == NULL){
+        return;
+    }
+
+    skill->category = category;
+}
+
+void skill_set_status(
+    Skill* skill,
+    SkillStatus status
+){
+    if(skill == NULL){
+        return;
+    }
+
+    skill->status = status;
+}
+
+void skill_add_study_session(
+    Skill* skill
+){
+    if(skill == NULL){
+        return;
+    }
+
+    skill->study_sessions++;
 }
 
 static int skill_contains_child(const Skill* parent, const Skill* child){
@@ -121,6 +161,52 @@ int skill_add_child(Skill* parent, Skill* child){
     parent->child_count++;
 
     child->parent = parent;
+
+    return 0;
+}
+
+int skill_remove_child(
+    Skill* parent,
+    Skill* child
+){
+    if(parent == NULL || child == NULL){
+        return -1;
+    }
+
+    size_t index = parent->child_count;
+
+    for(size_t i = 0; i < parent->child_count; i++){
+        if(parent->children[i] == child){
+            index = i;
+            break;
+        }
+    }
+
+    if(index == parent->child_count){
+        return -1;
+    }
+
+    for(size_t i = index; i + 1 < parent->child_count; i++){
+        parent->children[i] = parent->children[i + 1];
+    }
+
+    parent->child_count--;
+
+    if(parent->child_count == 0){
+        free(parent->children);
+        parent->children = NULL;
+    } else {
+        Skill** resized = realloc(
+            parent->children,
+            parent->child_count * sizeof(Skill*)
+        );
+
+        if(resized != NULL){
+            parent->children = resized;
+        }
+    }
+
+    child->parent = NULL;
 
     return 0;
 }
