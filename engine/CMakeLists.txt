@@ -11,6 +11,7 @@ add_library(compound STATIC
     src/compound.c
     src/skill.c
     src/id_generator.c
+    src/storage.c
 )
 
 add_executable(test_skill

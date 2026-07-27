@@ -96,6 +96,17 @@ int main(void)
         printf("SQL removed successfully.\n");
     }
 
+    int test = skill_save(
+        backend,
+        "skills.txt"
+        );
+
+    if(test == 0){
+        printf("Saved succesfully.\n");
+    } else {
+        printf("Error while creating file.\n");
+    }
+
     skill_destroy(backend);
 
     return 0;
