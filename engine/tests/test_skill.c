@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "skill.h"
+#include "database.h"
 
 int main(void)
 {
@@ -107,6 +108,40 @@ int main(void)
         printf("Error while creating file.\n");
     }
 
+    sqlite3* db = database_open(
+        "skills.db"
+    );
+
+    if (db == NULL)
+    {
+        printf("Database failed.\n");
+        return 1;
+    }
+
+    if (database_initialize(db) == 0)
+    {
+        printf(
+            "Database initialized.\n"
+        );
+    }
+    else
+    {
+        printf(
+            "Database initialization failed.\n"
+        );
+    }
+
+    database_clear_skills(db);
+
+    database_save_tree(
+        db,
+        backend
+    );
+
+    database_load_tree(db);
+
+
+    database_close(db);
     skill_destroy(backend);
 
     return 0;

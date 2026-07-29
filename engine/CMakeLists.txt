@@ -12,10 +12,15 @@ add_library(compound STATIC
     src/skill.c
     src/id_generator.c
     src/storage.c
+    src/database.c
 )
 
 add_executable(test_skill
     tests/test_skill.c
 )
 
-target_link_libraries(test_skill compound)
+target_link_libraries(
+    test_skill
+    compound
+    sqlite3
+)
