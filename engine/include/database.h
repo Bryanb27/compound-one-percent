@@ -40,4 +40,15 @@ Skill* database_load_tree(
     sqlite3* db
 );
 
+int database_update_progress(
+    sqlite3* db,
+    unsigned long id,
+    float progress
+);
+
+int database_delete_skill(
+    sqlite3* db,
+    unsigned long id
+);
+
 #endif

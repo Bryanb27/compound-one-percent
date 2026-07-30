@@ -138,7 +138,28 @@ int main(void)
         backend
     );
 
-    database_load_tree(db);
+    backend = database_load_tree(db);
+
+    printf(
+        "%s\n",
+        backend->name
+    );
+
+    printf(
+        "Children: %zu\n",
+        backend->child_count
+    );
+
+    database_update_progress(
+        db,
+        sql->id,
+        90.0f
+    );
+
+    database_delete_skill(
+        db,
+        csharp->id
+    );
 
 
     database_close(db);

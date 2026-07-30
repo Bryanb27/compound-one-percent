@@ -2,6 +2,16 @@
 
 #include <stdio.h>
 
+typedef struct
+{
+    unsigned long id;
+
+    long parent_id;
+
+    Skill* skill;
+
+} LoadedSkill;
+
 sqlite3* database_open(
     const char* filename
 )
@@ -306,6 +316,95 @@ int database_save_tree(
     return result;
 }
 
+int database_update_progress(
+    sqlite3* db,
+    unsigned long id,
+    float progress
+)
+{
+    if (db == NULL)
+        return -1;
+
+    const char* sql =
+        "UPDATE skills "
+        "SET progress = ? "
+        "WHERE id = ?;";
+
+    sqlite3_stmt* statement = NULL;
+
+    if (sqlite3_prepare_v2(
+            db,
+            sql,
+            -1,
+            &statement,
+            NULL
+        ) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_double(
+        statement,
+        1,
+        progress
+    );
+
+    sqlite3_bind_int64(
+        statement,
+        2,
+        id
+    );
+
+    int result = sqlite3_step(statement);
+
+    sqlite3_finalize(statement);
+
+    return result == SQLITE_DONE ? 0 : -1;
+}
+
+int database_delete_skill(
+    sqlite3* db,
+    unsigned long id
+)
+{
+    if (db == NULL)
+        return -1;
+
+    const char* sql =
+        "DELETE FROM skills "
+        "WHERE id = ?;";
+
+    sqlite3_stmt* statement = NULL;
+
+    if (sqlite3_prepare_v2(
+            db,
+            sql,
+            -1,
+            &statement,
+            NULL
+        ) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_int64(
+        statement,
+        1,
+        id
+    );
+
+    int result = sqlite3_step(statement);
+
+    sqlite3_finalize(statement);
+
+    if (result != SQLITE_DONE)
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
 Skill* database_load_tree(
     sqlite3* db
 )
@@ -339,13 +438,14 @@ Skill* database_load_tree(
         return NULL;
     }
 
+    LoadedSkill loaded[256];
+
+    size_t loaded_count = 0;
+
     while (sqlite3_step(statement) == SQLITE_ROW)
     {
         unsigned long id =
             sqlite3_column_int64(statement, 0);
-
-        long parent_id =
-            sqlite3_column_int64(statement, 1);
 
         const char* name =
             (const char*)sqlite3_column_text(statement, 2);
@@ -353,31 +453,84 @@ Skill* database_load_tree(
         const char* description =
             (const char*)sqlite3_column_text(statement, 3);
 
-        float progress =
-            sqlite3_column_double(statement, 4);
-
         float weight =
             sqlite3_column_double(statement, 5);
 
-        int category =
-            sqlite3_column_int(statement, 6);
+        Skill* skill = skill_create(
+            name,
+            description,
+            weight
+        );
 
-        int status =
+        skill->id = id;
+
+        skill_set_progress(
+            skill,
+            sqlite3_column_double(statement, 4)
+        );
+
+        skill_set_category(
+            skill,
+            (SkillCategory)
+            sqlite3_column_int(statement, 6)
+        );
+
+        skill->status =
             sqlite3_column_int(statement, 7);
 
-        int study_sessions =
+        skill->study_sessions =
             sqlite3_column_int(statement, 8);
-        
-        printf(
-            "%lu | %ld | %s | %.2f\n",
-            id,
-            parent_id,
-            name,
-            progress
-        );
-    }
 
+        printf(
+            "Loaded: %s\n",
+            skill->name
+        );
+
+        loaded[loaded_count].id = id;
+
+        loaded[loaded_count].parent_id =
+            sqlite3_column_int64(
+                statement,
+                1
+            );
+
+        loaded[loaded_count].skill = skill;
+
+        loaded_count++;
+
+    }
+    
     sqlite3_finalize(statement);
 
-    return NULL;
+    Skill* root = NULL;
+
+    for(size_t i = 0; i < loaded_count; i++)
+    {
+        if(loaded[i].parent_id == -1)
+        {
+            root = loaded[i].skill;
+            break;
+        }
+    }
+
+    for(size_t i = 0; i < loaded_count; i++)
+    {
+        if(loaded[i].parent_id == -1)
+            continue;
+
+        for(size_t j = 0; j < loaded_count; j++)
+        {
+            if(loaded[j].id == loaded[i].parent_id)
+            {
+                skill_add_child(
+                    loaded[j].skill,
+                    loaded[i].skill
+                );
+
+                break;
+            }
+        }
+    }
+
+    return root;
 }
