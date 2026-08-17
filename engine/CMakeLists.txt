@@ -13,6 +13,7 @@ add_library(compound STATIC
     src/id_generator.c
     src/storage.c
     src/database.c
+    src/bridge.c
 )
 
 add_executable(test_skill

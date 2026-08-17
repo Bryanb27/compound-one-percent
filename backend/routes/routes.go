@@ -13,12 +13,12 @@ func RegisterRoutes() {
 	)
 
 	http.HandleFunc(
-		"/skills",
-		handlers.GetSkillsHandler,
+		"GET /skills/{id}",
+		handlers.GetSkillHandler,
 	)
 
 	http.HandleFunc(
-		"/skills/create",
+		"POST /skills/create",
 		handlers.CreateSkillHandler,
 	)
 }

@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"compound/backend/internal"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -17,26 +19,40 @@ type CreateSkillRequest struct {
 	Weight      float32 `json:"weight"`
 }
 
-func GetSkillsHandler(
+func GetSkillHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	skills := []SkillResponse{
-		{
-			ID:       1,
-			Name:     "Backend",
-			Progress: 71,
-		},
-		{
-			ID:       2,
-			Name:     "C#",
-			Progress: 80,
-		},
-		{
-			ID:       3,
-			Name:     "SQL",
-			Progress: 50,
-		},
+	idString := r.PathValue("id")
+
+	var id uint64
+
+	_, err := fmt.Sscanf(
+		idString,
+		"%d",
+		&id,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid skill ID",
+			http.StatusBadRequest,
+		)
+
+		return
+	}
+
+	skill := internal.GetSkill(id)
+
+	if skill == nil {
+		http.Error(
+			w,
+			"Skill not found",
+			http.StatusNotFound,
+		)
+
+		return
 	}
 
 	w.Header().Set(
@@ -44,7 +60,7 @@ func GetSkillsHandler(
 		"application/json",
 	)
 
-	json.NewEncoder(w).Encode(skills)
+	json.NewEncoder(w).Encode(skill)
 }
 
 func CreateSkillHandler(
