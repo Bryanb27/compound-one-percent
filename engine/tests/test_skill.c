@@ -32,7 +32,7 @@ int main(void)
     printf("Skill tree created.\n");
 
     sqlite3* db = database_open(
-        "../database/skills.db"
+        "../skills.db"
     );
 
     if (db == NULL)

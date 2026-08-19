@@ -19,7 +19,7 @@ func main() {
 
 	routes.RegisterRoutes()
 
-	fmt.Println("Starting C engine test...")
+	fmt.Println("Starting backend...")
 
 	database := C.bridge_database_open(
 		C.CString("../database/skills.db"),
@@ -42,43 +42,9 @@ func main() {
 
 	fmt.Println("Database initialized.")
 
-	root := C.bridge_load_tree(
-		database,
-	)
-
-	/*if root == nil {
-		fmt.Println("Failed to load tree.")
-
-		C.bridge_database_close(database)
-
-		return
-	}*/
-
-	fmt.Println("Tree loaded!")
-
-	fmt.Printf(
-		"Root: %s\n",
-		C.GoString(
-			C.bridge_skill_name(root),
-		),
-	)
-
-	fmt.Printf(
-		"Progress: %.2f%%\n",
-		float32(
-			C.bridge_skill_progress(root),
-		),
-	)
-
-	fmt.Println("Tree:")
-
-	C.bridge_print_tree(root)
-
-	C.bridge_destroy_skill(root)
+	fmt.Println("Backend ready.")
 
 	C.bridge_database_close(database)
-
-	fmt.Println("C engine test finished.")
 
 	fmt.Println("Listening on :8087")
 

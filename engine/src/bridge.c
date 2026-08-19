@@ -120,3 +120,57 @@ void bridge_test_database(
 
     printf("C received database.\n");
 }
+
+int bridge_database_insert_skill(
+    sqlite3* db,
+    Skill* skill
+)
+{
+    if (db == NULL || skill == NULL)
+        return -1;
+
+    return database_insert_skill(
+        db,
+        skill
+    );
+}
+
+int bridge_database_update_progress(
+    sqlite3* db,
+    unsigned long id,
+    float progress
+)
+{
+    if (db == NULL)
+        return -1;
+
+    return database_update_progress(
+        db,
+        id,
+        progress
+    );
+}
+
+int bridge_database_delete_skill(
+    sqlite3* db,
+    unsigned long id
+)
+{
+    if (db == NULL)
+        return -1;
+
+    return database_delete_skill(
+        db,
+        id
+    );
+}
+
+void bridge_add_study_session(
+    Skill* skill
+)
+{
+    if (skill == NULL)
+        return;
+
+    skill_add_study_session(skill);
+}

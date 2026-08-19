@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"C"
+	"compound/backend/engine"
 	"compound/backend/internal"
 	"encoding/json"
 	"fmt"
@@ -17,6 +19,10 @@ type CreateSkillRequest struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Weight      float32 `json:"weight"`
+}
+
+type UpdateProgressRequest struct {
+	Progress float32 `json:"progress"`
 }
 
 func GetSkillHandler(
@@ -63,19 +69,24 @@ func GetSkillHandler(
 	json.NewEncoder(w).Encode(skill)
 }
 
+func GetSkillsHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	skills := internal.GetSkills()
+
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	json.NewEncoder(w).Encode(skills)
+}
+
 func CreateSkillHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	if r.Method != http.MethodPost {
-		http.Error(
-			w,
-			"Method not allowed",
-			http.StatusMethodNotAllowed,
-		)
-		return
-	}
-
 	var request CreateSkillRequest
 
 	err := json.NewDecoder(
@@ -91,10 +102,127 @@ func CreateSkillHandler(
 		return
 	}
 
+	created := engine.CreateSkill(
+		request.Name,
+		request.Description,
+		request.Weight,
+	)
+
+	if !created {
+		http.Error(
+			w,
+			"Failed to create skill",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
 	w.Header().Set(
 		"Content-Type",
 		"application/json",
 	)
 
 	json.NewEncoder(w).Encode(request)
+}
+
+func UpdateProgressHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	idString := r.PathValue("id")
+
+	var id uint64
+
+	_, err := fmt.Sscanf(
+		idString,
+		"%d",
+		&id,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid skill ID",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	var request UpdateProgressRequest
+
+	err = json.NewDecoder(
+		r.Body,
+	).Decode(&request)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid JSON",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if request.Progress < 0 ||
+		request.Progress > 100 {
+		http.Error(
+			w,
+			"Progress must be between 0 and 100",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if !engine.UpdateProgress(
+		id,
+		request.Progress,
+	) {
+		http.Error(
+			w,
+			"Failed to update progress",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(
+		http.StatusNoContent,
+	)
+}
+
+func DeleteSkillHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	idString := r.PathValue("id")
+
+	var id uint64
+
+	_, err := fmt.Sscanf(
+		idString,
+		"%d",
+		&id,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid skill ID",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if !engine.DeleteSkill(id) {
+		http.Error(
+			w,
+			"Failed to delete skill",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(
+		http.StatusNoContent,
+	)
 }

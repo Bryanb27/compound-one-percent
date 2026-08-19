@@ -101,17 +101,16 @@ int database_insert_skill(
         return -1;
 
     const char* sql =
-    "INSERT INTO skills ("
-    "id,"
-    "parent_id,"
-    "name,"
-    "description,"
-    "progress,"
-    "weight,"
-    "category,"
-    "status,"
-    "study_sessions"
-    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        "INSERT INTO skills ("
+        "parent_id,"
+        "name,"
+        "description,"
+        "progress,"
+        "weight,"
+        "category,"
+        "status,"
+        "study_sessions"
+        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
     sqlite3_stmt* statement = NULL;
 
@@ -126,12 +125,6 @@ int database_insert_skill(
         return -1;
     }
 
-    sqlite3_bind_int64(
-        statement,
-        1,
-        skill->id
-    );
-
     long parent_id = -1;
 
     if (skill->parent != NULL)
@@ -139,11 +132,15 @@ int database_insert_skill(
         parent_id = skill->parent->id;
     }
 
-    sqlite3_bind_int64(statement, 2, parent_id);
+    sqlite3_bind_int64(
+        statement,
+        1,
+        parent_id
+    );
 
     sqlite3_bind_text(
         statement,
-        3,
+        2,
         skill->name,
         -1,
         SQLITE_TRANSIENT
@@ -151,7 +148,7 @@ int database_insert_skill(
 
     sqlite3_bind_text(
         statement,
-        4,
+        3,
         skill->description,
         -1,
         SQLITE_TRANSIENT
@@ -159,42 +156,49 @@ int database_insert_skill(
 
     sqlite3_bind_double(
         statement,
-        5,
+        4,
         skill->self_progress
     );
 
     sqlite3_bind_double(
         statement,
-        6,
+        5,
         skill->weight
     );
 
     sqlite3_bind_int(
         statement,
-        7,
+        6,
         skill->category
     );
 
     sqlite3_bind_int(
         statement,
-        8,
+        7,
         skill->status
     );
 
     sqlite3_bind_int(
         statement,
-        9,
+        8,
         skill->study_sessions
     );
 
     int result = sqlite3_step(statement);
 
-    sqlite3_finalize(statement);
-
     if (result != SQLITE_DONE)
     {
+        printf(
+            "SQLite insert error: %s\n",
+            sqlite3_errmsg(db)
+        );
+
+        sqlite3_finalize(statement);
+
         return -1;
     }
+
+    sqlite3_finalize(statement);
 
     return 0;
 }

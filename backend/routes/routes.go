@@ -21,4 +21,14 @@ func RegisterRoutes() {
 		"POST /skills/create",
 		handlers.CreateSkillHandler,
 	)
+
+	http.HandleFunc(
+		"PUT /skills/{id}/progress",
+		handlers.UpdateProgressHandler,
+	)
+
+	http.HandleFunc(
+		"DELETE /skills/{id}",
+		handlers.DeleteSkillHandler,
+	)
 }

@@ -53,4 +53,24 @@ void bridge_test_database(
     sqlite3* db
 );
 
+int bridge_database_insert_skill(
+    sqlite3* db,
+    Skill* skill
+);
+
+int bridge_database_update_progress(
+    sqlite3* db,
+    unsigned long id,
+    float progress
+);
+
+int bridge_database_delete_skill(
+    sqlite3* db,
+    unsigned long id
+);
+
+void bridge_add_study_session(
+    Skill* skill
+);
+
 #endif
