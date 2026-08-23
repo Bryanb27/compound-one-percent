@@ -19,6 +19,7 @@ type CreateSkillRequest struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Weight      float32 `json:"weight"`
+	Progress    float32 `json:"progress"`
 }
 
 type UpdateProgressRequest struct {
@@ -73,7 +74,17 @@ func GetSkillsHandler(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	skills := internal.GetSkills()
+	skills := engine.GetAllSkills()
+
+	if skills == nil {
+		http.Error(
+			w,
+			"Failed to load skills",
+			http.StatusInternalServerError,
+		)
+
+		return
+	}
 
 	w.Header().Set(
 		"Content-Type",
@@ -106,6 +117,7 @@ func CreateSkillHandler(
 		request.Name,
 		request.Description,
 		request.Weight,
+		request.Progress,
 	)
 
 	if !created {

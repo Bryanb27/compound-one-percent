@@ -174,3 +174,51 @@ void bridge_add_study_session(
 
     skill_add_study_session(skill);
 }
+
+size_t bridge_skill_child_count(
+    Skill* skill
+)
+{
+    if (skill == NULL)
+        return 0;
+
+    return skill->child_count;
+}
+
+Skill* bridge_skill_child(
+    Skill* skill,
+    size_t index
+)
+{
+    if (skill == NULL)
+        return NULL;
+
+    if (index >= skill->child_count)
+        return NULL;
+
+    return skill->children[index];
+}
+
+size_t bridge_get_skills(
+    sqlite3* db,
+    Skill** skills,
+    size_t max_count
+)
+{
+    return database_get_skills(
+        db,
+        skills,
+        max_count
+    );
+}
+
+void bridge_skill_set_progress(
+    Skill* skill,
+    float progress
+)
+{
+    skill_set_progress(
+        skill,
+        progress
+    );
+}

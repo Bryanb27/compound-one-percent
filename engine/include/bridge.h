@@ -2,6 +2,7 @@
 #define BRIDGE_H
 
 #include "skill.h"
+#include "database.h"
 #include <sqlite3.h>
 
 
@@ -71,6 +72,26 @@ int bridge_database_delete_skill(
 
 void bridge_add_study_session(
     Skill* skill
+);
+
+size_t bridge_skill_child_count(
+    Skill* skill
+);
+
+Skill* bridge_skill_child(
+    Skill* skill,
+    size_t index
+);
+
+size_t bridge_get_skills(
+    sqlite3* db,
+    Skill** skills,
+    size_t max_count
+);
+
+void bridge_skill_set_progress(
+    Skill* skill,
+    float progress
 );
 
 #endif

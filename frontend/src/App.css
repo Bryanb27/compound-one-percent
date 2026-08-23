@@ -1,0 +1,71 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f5f5f5;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+header {
+  margin-bottom: 30px;
+}
+
+.create-form,
+.skill-card {
+  background: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.create-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.create-form input {
+  padding: 10px;
+}
+
+button {
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.description {
+  color: #666;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.progress-bar {
+  height: 12px;
+  background: #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 8px 0 15px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #333;
+}
+
+input[type="range"] {
+  width: 100%;
+}

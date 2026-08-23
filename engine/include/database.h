@@ -2,6 +2,7 @@
 #define DATABASE_H
 
 #include <sqlite3.h>
+#include <stddef.h>
 
 #include "skill.h"
 
@@ -49,6 +50,12 @@ int database_update_progress(
 int database_delete_skill(
     sqlite3* db,
     unsigned long id
+);
+
+size_t database_get_skills(
+    sqlite3* db,
+    Skill** skills,
+    size_t max_count
 );
 
 #endif

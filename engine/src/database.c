@@ -538,3 +538,103 @@ Skill* database_load_tree(
 
     return root;
 }
+
+size_t database_get_skills(
+    sqlite3* db,
+    Skill** skills,
+    size_t max_count
+)
+{
+    if (db == NULL || skills == NULL)
+        return 0;
+
+    const char* sql =
+        "SELECT "
+        "id,"
+        "name,"
+        "description,"
+        "progress,"
+        "weight,"
+        "category,"
+        "status,"
+        "study_sessions "
+        "FROM skills;";
+
+    sqlite3_stmt* statement = NULL;
+
+    if (sqlite3_prepare_v2(
+            db,
+            sql,
+            -1,
+            &statement,
+            NULL
+        ) != SQLITE_OK)
+    {
+        return 0;
+    }
+
+    size_t count = 0;
+
+    while (
+        sqlite3_step(statement) == SQLITE_ROW &&
+        count < max_count
+    )
+    {
+        unsigned long id =
+            sqlite3_column_int64(statement, 0);
+
+        const char* name =
+            (const char*)sqlite3_column_text(
+                statement,
+                1
+            );
+
+        const char* description =
+            (const char*)sqlite3_column_text(
+                statement,
+                2
+            );
+
+        float progress =
+            sqlite3_column_double(statement, 3);
+
+        float weight =
+            sqlite3_column_double(statement, 4);
+
+        Skill* skill = skill_create(
+            name,
+            description,
+            weight
+        );
+
+        if (skill == NULL)
+            continue;
+
+        skill->id = id;
+
+        skill_set_progress(
+            skill,
+            progress
+        );
+
+        skill_set_category(
+            skill,
+            (SkillCategory)
+            sqlite3_column_int(statement, 5)
+        );
+
+        skill->status =
+            sqlite3_column_int(statement, 6);
+
+        skill->study_sessions =
+            sqlite3_column_int(statement, 7);
+
+        skills[count] = skill;
+
+        count++;
+    }
+
+    sqlite3_finalize(statement);
+
+    return count;
+}
