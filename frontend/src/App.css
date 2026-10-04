@@ -1,71 +1,363 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: sans-serif;
-  background: #f5f5f5;
+  font-family: Arial, sans-serif;
+  background: #111827;
+  color: #f9fafb;
+}
+
+button,
+input {
+  font: inherit;
 }
 
 .container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 20px;
+  width: 100%;
+  min-height: 100vh;
+  padding: 40px;
 }
 
 header {
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
-.create-form,
-.skill-card {
-  background: white;
-  padding: 20px;
-  margin-bottom: 20px;
-  border-radius: 10px;
+header h1 {
+  margin: 0;
+  font-size: 36px;
 }
+
+header p {
+  margin-top: 8px;
+  color: #9ca3af;
+}
+
+
+/* =========================
+   CREATE FORM
+   ========================= */
 
 .create-form {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  max-width: 600px;
+  margin-bottom: 50px;
+
+  padding: 24px;
+
+  background: #1f2937;
+
+  border: 1px solid #374151;
+
+  border-radius: 14px;
 }
 
-.create-form input {
+.create-form h2 {
+  margin-top: 0;
+}
+
+.create-form input,
+.create-form select {
+  width: 100%;
+
   padding: 10px;
+  margin-bottom: 10px;
+
+  border: 1px solid #4b5563;
+  border-radius: 8px;
+
+  background: #111827;
+  color: white;
 }
 
-button {
-  padding: 10px 15px;
+.create-form button {
+  padding: 10px 18px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #2563eb;
+  color: white;
+
   cursor: pointer;
 }
 
-.skill-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.create-form button:hover {
+  background: #1d4ed8;
 }
 
+
+/* =========================
+   SKILL BOARD
+   ========================= */
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+
+  align-items: flex-start;
+
+  gap: 24px;
+
+  width: 100%;
+}
+
+
+/* =========================
+   SKILL NODE
+   ========================= */
+
+.skill-node {
+  width: 300px;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================
+   CARD
+   ========================= */
+
+.skill-card {
+  position: relative;
+
+  width: 300px;
+  min-height: 190px;
+
+  padding: 20px;
+
+  background: #1f2937;
+
+  border: 1px solid #374151;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.25);
+
+  cursor: grab;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.skill-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.35);
+}
+
+.skill-card:active {
+  cursor: grabbing;
+}
+
+
+/* =========================
+   HEADER
+   ========================= */
+
+.skill-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+}
+
+.skill-header h2 {
+  margin: 0;
+
+  font-size: 21px;
+}
+
+.delete-button {
+  width: 28px;
+  height: 28px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #374151;
+  color: #9ca3af;
+
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #ef4444;
+  color: white;
+}
+
+
+/* =========================
+   DESCRIPTION
+   ========================= */
+
 .description {
-  color: #666;
+  margin: 0 0 20px;
+
+  color: #9ca3af;
+
+  font-size: 14px;
+}
+
+
+/* =========================
+   PROGRESS
+   ========================= */
+
+.progress-section {
+  margin-top: 15px;
 }
 
 .progress-info {
   display: flex;
+
   justify-content: space-between;
-  margin-top: 20px;
+
+  margin-bottom: 7px;
+
+  font-size: 14px;
 }
 
+.progress-info span:last-child {
+  font-weight: bold;
+}
+
+
+/* =========================
+   PROGRESS BAR
+   ========================= */
+
 .progress-bar {
-  height: 12px;
-  background: #ddd;
-  border-radius: 6px;
+  width: 100%;
+  height: 8px;
+
   overflow: hidden;
-  margin: 8px 0 15px;
+
+  border-radius: 10px;
+
+  background: #374151;
 }
 
 .progress-fill {
   height: 100%;
-  background: #333;
+
+  border-radius: 10px;
+
+  background: #3b82f6;
+
+  transition: width 0.2s ease;
 }
 
-input[type="range"] {
+
+/* =========================
+   SLIDER
+   ========================= */
+
+.progress-section input[type="range"] {
   width: 100%;
+
+  margin-top: 15px;
+}
+
+
+/* =========================
+   DAILY BUTTON
+   ========================= */
+
+.daily-button {
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 9px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #2563eb;
+  color: white;
+
+  cursor: pointer;
+}
+
+.daily-button:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================
+   EXPAND BUTTON
+   ========================= */
+
+.expand-button {
+  display: block;
+
+  width: 34px;
+  height: 34px;
+
+  margin: 18px auto 0;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #374151;
+  color: white;
+
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+.expand-button:hover {
+  background: #4b5563;
+}
+
+
+/* =========================
+   CHILDREN
+   ========================= */
+
+.children {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 18px;
+
+  margin-top: 20px;
+
+  margin-left: 25px;
+
+  padding-left: 20px;
+
+  border-left: 2px solid #374151;
+}
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 700px) {
+
+  .container {
+    padding: 20px;
+  }
+
+  .skills {
+    justify-content: center;
+  }
+
+  .skill-node,
+  .skill-card {
+    width: 100%;
+    max-width: 350px;
+  }
+
 }

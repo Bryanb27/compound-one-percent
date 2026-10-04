@@ -81,4 +81,6 @@ int skill_remove_child(
     Skill* child
 );
 
+float skill_calculate_progress(Skill* skill);
+
 #endif

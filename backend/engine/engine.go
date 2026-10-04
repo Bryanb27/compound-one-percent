@@ -26,6 +26,7 @@ func CreateSkill(
 	description string,
 	weight float32,
 	progress float32,
+	parentID uint64,
 ) bool {
 
 	fmt.Println("Creating skill...")
@@ -69,17 +70,44 @@ func CreateSkill(
 
 	defer C.bridge_destroy_skill(skill)
 
-	fmt.Println("C skill created")
-
 	C.bridge_skill_set_progress(
 		skill,
 		C.float(progress),
 	)
 
+	var parent *C.Skill
+
+	/*
+	 * Find parent if one was selected.
+	 */
+	if parentID != 0 {
+
+		parent := C.bridge_database_find_skill(
+			database,
+			C.ulong(parentID),
+		)
+
+		if parent == nil {
+			fmt.Println("Parent not found")
+			return false
+		}
+
+		C.bridge_add_child(
+			parent,
+			skill,
+		)
+
+		fmt.Println("Parent assigned")
+	}
+
 	result := C.bridge_database_insert_skill(
 		database,
 		skill,
 	)
+
+	if parent != nil {
+		C.bridge_destroy_skill(parent)
+	}
 
 	fmt.Println(
 		"Insert result:",
@@ -108,6 +136,40 @@ func UpdateProgress(
 		database,
 		C.ulong(id),
 		C.float(progress),
+	)
+
+	return result == 0
+}
+
+func UpdateSkill(
+	id uint64,
+	name string,
+	description string,
+	weight float32,
+) bool {
+
+	database := C.bridge_database_open(
+		C.CString("../database/skills.db"),
+	)
+
+	if database == nil {
+		return false
+	}
+
+	defer C.bridge_database_close(database)
+
+	cName := C.CString(name)
+	cDescription := C.CString(description)
+
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cDescription))
+
+	result := C.bridge_database_update_skill(
+		database,
+		C.ulong(id),
+		cName,
+		cDescription,
+		C.float(weight),
 	)
 
 	return result == 0
@@ -172,7 +234,7 @@ func convertSkill(
 		),
 
 		Progress: float32(
-			C.bridge_skill_progress(skill),
+			C.bridge_skill_calculate_progress(skill),
 		),
 	}
 
@@ -218,7 +280,7 @@ func GetAllSkills() []Skill {
 		C.size_t(len(skills)),
 	)
 
-	result := make([]Skill, 0, int(count))
+	result := make([]Skill, 0)
 
 	for i := 0; i < int(count); i++ {
 
@@ -226,15 +288,90 @@ func GetAllSkills() []Skill {
 			continue
 		}
 
+		// Only return root skills.
+		if C.bridge_skill_parent_id(skills[i]) != -1 {
+			continue
+		}
+
 		result = append(
 			result,
 			convertSkill(skills[i]),
 		)
-
-		C.bridge_destroy_skill(
-			skills[i],
-		)
 	}
 
 	return result
+}
+
+func AddDailyProgress(id uint64) bool {
+
+	database := C.bridge_database_open(
+		C.CString("../database/skills.db"),
+	)
+
+	if database == nil {
+		return false
+	}
+
+	defer C.bridge_database_close(database)
+
+	result := C.bridge_database_add_daily_progress(
+		database,
+		C.ulong(id),
+	)
+
+	return int(result) > 0
+}
+
+func UpdateSkillParent(
+	id uint64,
+	parentID int64,
+) bool {
+
+	filename := C.CString("../database/skills.db")
+	defer C.free(unsafe.Pointer(filename))
+
+	database := C.bridge_database_open(
+		filename,
+	)
+
+	if database == nil {
+		return false
+	}
+
+	defer C.bridge_database_close(database)
+
+	result := C.bridge_database_update_parent(
+		database,
+		C.ulong(id),
+		C.long(parentID),
+	)
+
+	return result == 0
+}
+
+func UpdateSkillPosition(
+	id uint64,
+	position int,
+) bool {
+
+	filename := C.CString("../database/skills.db")
+	defer C.free(unsafe.Pointer(filename))
+
+	database := C.bridge_database_open(
+		filename,
+	)
+
+	if database == nil {
+		return false
+	}
+
+	defer C.bridge_database_close(database)
+
+	result := C.bridge_database_update_position(
+		database,
+		C.ulong(id),
+		C.int(position),
+	)
+
+	return result == 0
 }

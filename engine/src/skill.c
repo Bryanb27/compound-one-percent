@@ -4,6 +4,39 @@
 #include <stdlib.h>
 #include <string.h>
 
+float skill_calculate_progress(Skill* skill)
+{
+    if (skill == NULL)
+        return 0.0f;
+
+    if (skill->child_count == 0)
+        return skill->self_progress;
+
+    float total_progress = 0.0f;
+    float total_weight = 0.0f;
+
+    for (size_t i = 0; i < skill->child_count; i++)
+    {
+        Skill* child = skill->children[i];
+
+        if (child == NULL)
+            continue;
+
+        float child_progress =
+            skill_calculate_progress(child);
+
+        total_progress +=
+            child_progress * child->weight;
+
+        total_weight += child->weight;
+    }
+
+    if (total_weight == 0.0f)
+        return 0.0f;
+
+    return total_progress / total_weight;
+}
+
 Skill* skill_create(
     const char* name,
     const char* description,

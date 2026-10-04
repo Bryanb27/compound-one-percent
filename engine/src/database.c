@@ -56,15 +56,16 @@ int database_initialize(
 
     const char* sql =
         "CREATE TABLE IF NOT EXISTS skills ("
-        "id INTEGER PRIMARY KEY,"
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "parent_id INTEGER,"
         "name TEXT NOT NULL,"
         "description TEXT,"
-        "progress REAL,"
-        "weight REAL,"
-        "category INTEGER,"
-        "status INTEGER,"
-        "study_sessions INTEGER"
+        "progress REAL DEFAULT 0,"
+        "weight REAL DEFAULT 100,"
+        "category INTEGER DEFAULT 0,"
+        "status INTEGER DEFAULT 0,"
+        "study_sessions INTEGER DEFAULT 0,"
+        "last_practiced TEXT"
         ");";
 
     char* error = NULL;
@@ -366,6 +367,75 @@ int database_update_progress(
     return result == SQLITE_DONE ? 0 : -1;
 }
 
+int database_update_skill(
+    sqlite3* db,
+    unsigned long id,
+    const char* name,
+    const char* description,
+    float weight
+)
+{
+    if (db == NULL || name == NULL || description == NULL)
+        return -1;
+
+    const char* sql =
+        "UPDATE skills "
+        "SET name = ?, "
+        "description = ?, "
+        "weight = ? "
+        "WHERE id = ?;";
+
+    sqlite3_stmt* statement = NULL;
+
+    if (sqlite3_prepare_v2(
+            db,
+            sql,
+            -1,
+            &statement,
+            NULL
+        ) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_text(
+        statement,
+        1,
+        name,
+        -1,
+        SQLITE_TRANSIENT
+    );
+
+    sqlite3_bind_text(
+        statement,
+        2,
+        description,
+        -1,
+        SQLITE_TRANSIENT
+    );
+
+    sqlite3_bind_double(
+        statement,
+        3,
+        weight
+    );
+
+    sqlite3_bind_int64(
+        statement,
+        4,
+        id
+    );
+
+    int result = sqlite3_step(statement);
+
+    sqlite3_finalize(statement);
+
+    if (result != SQLITE_DONE)
+        return -1;
+
+    return 0;
+}
+
 int database_delete_skill(
     sqlite3* db,
     unsigned long id
@@ -375,8 +445,16 @@ int database_delete_skill(
         return -1;
 
     const char* sql =
+        "WITH RECURSIVE descendants(id) AS ("
+        "    SELECT id FROM skills WHERE id = ? "
+        "    UNION ALL "
+        "    SELECT skills.id "
+        "    FROM skills "
+        "    JOIN descendants "
+        "    ON skills.parent_id = descendants.id"
+        ") "
         "DELETE FROM skills "
-        "WHERE id = ?;";
+        "WHERE id IN (SELECT id FROM descendants);";
 
     sqlite3_stmt* statement = NULL;
 
@@ -402,9 +480,7 @@ int database_delete_skill(
     sqlite3_finalize(statement);
 
     if (result != SQLITE_DONE)
-    {
         return -1;
-    }
 
     return 0;
 }
@@ -551,6 +627,7 @@ size_t database_get_skills(
     const char* sql =
         "SELECT "
         "id,"
+        "parent_id,"
         "name,"
         "description,"
         "progress,"
@@ -573,6 +650,8 @@ size_t database_get_skills(
         return 0;
     }
 
+    unsigned long parent_ids[256];
+
     size_t count = 0;
 
     while (
@@ -583,23 +662,32 @@ size_t database_get_skills(
         unsigned long id =
             sqlite3_column_int64(statement, 0);
 
-        const char* name =
-            (const char*)sqlite3_column_text(
-                statement,
-                1
-            );
+        parent_ids[count] =
+            sqlite3_column_int64(statement, 1);
 
-        const char* description =
+        const char* name =
             (const char*)sqlite3_column_text(
                 statement,
                 2
             );
 
+        const char* description =
+            (const char*)sqlite3_column_text(
+                statement,
+                3
+            );
+
         float progress =
-            sqlite3_column_double(statement, 3);
+            sqlite3_column_double(
+                statement,
+                4
+            );
 
         float weight =
-            sqlite3_column_double(statement, 4);
+            sqlite3_column_double(
+                statement,
+                5
+            );
 
         Skill* skill = skill_create(
             name,
@@ -620,14 +708,14 @@ size_t database_get_skills(
         skill_set_category(
             skill,
             (SkillCategory)
-            sqlite3_column_int(statement, 5)
+            sqlite3_column_int(statement, 6)
         );
 
         skill->status =
-            sqlite3_column_int(statement, 6);
+            sqlite3_column_int(statement, 7);
 
         skill->study_sessions =
-            sqlite3_column_int(statement, 7);
+            sqlite3_column_int(statement, 8);
 
         skills[count] = skill;
 
@@ -636,5 +724,285 @@ size_t database_get_skills(
 
     sqlite3_finalize(statement);
 
+    /*
+     * Build parent -> child relationships.
+     */
+    for (size_t i = 0; i < count; i++)
+    {
+        if (parent_ids[i] == -1)
+            continue;
+
+        for (size_t j = 0; j < count; j++)
+        {
+            if (skills[j]->id == parent_ids[i])
+            {
+                skill_add_child(
+                    skills[j],
+                    skills[i]
+                );
+
+                break;
+            }
+        }
+    }
+
     return count;
+}
+
+Skill* database_find_skill(
+    sqlite3* db,
+    unsigned long id
+)
+{
+    if (db == NULL)
+        return NULL;
+
+    const char* sql =
+        "SELECT "
+        "id,"
+        "name,"
+        "description,"
+        "progress,"
+        "weight,"
+        "category,"
+        "status,"
+        "study_sessions "
+        "FROM skills "
+        "WHERE id = ?;";
+
+    sqlite3_stmt* statement = NULL;
+
+    if (sqlite3_prepare_v2(
+            db,
+            sql,
+            -1,
+            &statement,
+            NULL
+        ) != SQLITE_OK)
+    {
+        return NULL;
+    }
+
+    sqlite3_bind_int64(
+        statement,
+        1,
+        id
+    );
+
+    Skill* skill = NULL;
+
+    if (sqlite3_step(statement) == SQLITE_ROW)
+    {
+        const char* name =
+            (const char*)sqlite3_column_text(
+                statement,
+                1
+            );
+
+        const char* description =
+            (const char*)sqlite3_column_text(
+                statement,
+                2
+            );
+
+        float weight =
+            sqlite3_column_double(
+                statement,
+                4
+            );
+
+        skill = skill_create(
+            name,
+            description,
+            weight
+        );
+
+        if (skill != NULL)
+        {
+            skill->id =
+                sqlite3_column_int64(
+                    statement,
+                    0
+                );
+
+            skill_set_progress(
+                skill,
+                sqlite3_column_double(
+                    statement,
+                    3
+                )
+            );
+
+            skill_set_category(
+                skill,
+                (SkillCategory)
+                sqlite3_column_int(
+                    statement,
+                    5
+                )
+            );
+
+            skill->status =
+                sqlite3_column_int(
+                    statement,
+                    6
+                );
+
+            skill->study_sessions =
+                sqlite3_column_int(
+                    statement,
+                    7
+                );
+        }
+    }
+
+    sqlite3_finalize(statement);
+
+    return skill;
+}
+
+int database_add_daily_progress(
+    sqlite3* db,
+    unsigned long id
+)
+{
+    if (db == NULL)
+        return -1;
+
+    const char* sql =
+        "UPDATE skills "
+        "SET progress = MIN(progress + 1, 100), "
+        "study_sessions = study_sessions + 1, "
+        "last_practiced = date('now') "
+        "WHERE id = ? "
+        "AND (last_practiced IS NULL "
+        "OR last_practiced != date('now'));";
+
+    sqlite3_stmt* statement = NULL;
+
+    if (sqlite3_prepare_v2(
+            db,
+            sql,
+            -1,
+            &statement,
+            NULL
+        ) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_int64(
+        statement,
+        1,
+        id
+    );
+
+    int result = sqlite3_step(statement);
+
+    if (result != SQLITE_DONE)
+    {
+        sqlite3_finalize(statement);
+        return -1;
+    }
+
+    int changed = sqlite3_changes(db);
+
+    sqlite3_finalize(statement);
+
+    return changed;
+}
+
+int database_update_parent(
+    sqlite3* db,
+    unsigned long id,
+    long parent_id
+)
+{
+    if (db == NULL)
+        return -1;
+
+    const char* sql =
+        "UPDATE skills "
+        "SET parent_id = ? "
+        "WHERE id = ?;";
+
+    sqlite3_stmt* statement = NULL;
+
+    if (sqlite3_prepare_v2(
+            db,
+            sql,
+            -1,
+            &statement,
+            NULL
+        ) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_int64(
+        statement,
+        1,
+        parent_id
+    );
+
+    sqlite3_bind_int64(
+        statement,
+        2,
+        id
+    );
+
+    int result = sqlite3_step(statement);
+
+    sqlite3_finalize(statement);
+
+    if (result != SQLITE_DONE)
+        return -1;
+
+    return 0;
+}
+
+int database_update_position(
+    sqlite3* db,
+    unsigned long id,
+    int position
+)
+{
+    if (db == NULL)
+        return -1;
+
+    const char* sql =
+        "UPDATE skills "
+        "SET position = ? "
+        "WHERE id = ?;";
+
+    sqlite3_stmt* statement = NULL;
+
+    if (sqlite3_prepare_v2(
+            db,
+            sql,
+            -1,
+            &statement,
+            NULL
+        ) != SQLITE_OK)
+    {
+        return -1;
+    }
+
+    sqlite3_bind_int(
+        statement,
+        1,
+        position
+    );
+
+    sqlite3_bind_int64(
+        statement,
+        2,
+        id
+    );
+
+    int result = sqlite3_step(statement);
+
+    sqlite3_finalize(statement);
+
+    return result == SQLITE_DONE ? 0 : -1;
 }

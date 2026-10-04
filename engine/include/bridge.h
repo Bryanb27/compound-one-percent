@@ -94,4 +94,52 @@ void bridge_skill_set_progress(
     float progress
 );
 
+void bridge_add_child(
+    Skill* parent,
+    Skill* child
+);
+
+Skill* bridge_find_skill_by_id(
+    Skill* root,
+    unsigned long id
+);
+
+Skill* bridge_database_find_skill(
+    sqlite3* db,
+    unsigned long id
+);
+
+long bridge_skill_parent_id(
+    Skill* skill
+);
+
+int bridge_database_update_skill(
+    sqlite3* db,
+    unsigned long id,
+    const char* name,
+    const char* description,
+    float weight
+);
+
+int bridge_database_add_daily_progress(
+    sqlite3* db,
+    unsigned long id
+);
+
+float bridge_skill_calculate_progress(
+    Skill* skill
+);
+
+int bridge_database_update_parent(
+    sqlite3* db,
+    unsigned long id,
+    long parent_id
+);
+
+int bridge_database_update_position(
+    sqlite3* db,
+    unsigned long id,
+    int position
+);
+
 #endif

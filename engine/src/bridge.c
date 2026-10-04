@@ -222,3 +222,127 @@ void bridge_skill_set_progress(
         progress
     );
 }
+
+void bridge_add_child(
+    Skill* parent,
+    Skill* child
+)
+{
+    if (parent == NULL || child == NULL)
+        return;
+
+    skill_add_child(
+        parent,
+        child
+    );
+}
+Skill* bridge_find_skill_by_id(
+    Skill* root,
+    unsigned long id
+)
+{
+    if (root == NULL)
+        return NULL;
+
+    return skill_find_by_id(
+        root,
+        id
+    );
+}
+
+Skill* bridge_database_find_skill(
+    sqlite3* db,
+    unsigned long id
+)
+{
+    return database_find_skill(
+        db,
+        id
+    );
+}
+
+long bridge_skill_parent_id(
+    Skill* skill
+)
+{
+    if (skill == NULL)
+        return -1;
+
+    if (skill->parent == NULL)
+        return -1;
+
+    return skill->parent->id;
+}
+
+int bridge_database_update_skill(
+    sqlite3* db,
+    unsigned long id,
+    const char* name,
+    const char* description,
+    float weight
+)
+{
+    if (db == NULL)
+        return -1;
+
+    return database_update_skill(
+        db,
+        id,
+        name,
+        description,
+        weight
+    );
+}
+
+int bridge_database_add_daily_progress(
+    sqlite3* db,
+    unsigned long id
+)
+{
+    if (db == NULL)
+        return -1;
+
+    return database_add_daily_progress(
+        db,
+        id
+    );
+}
+
+float bridge_skill_calculate_progress(
+    Skill* skill
+)
+{
+    return skill_calculate_progress(skill);
+}
+
+int bridge_database_update_parent(
+    sqlite3* db,
+    unsigned long id,
+    long parent_id
+)
+{
+    if (db == NULL)
+        return -1;
+
+    return database_update_parent(
+        db,
+        id,
+        parent_id
+    );
+}
+
+int bridge_database_update_position(
+    sqlite3* db,
+    unsigned long id,
+    int position
+)
+{
+    if (db == NULL)
+        return -1;
+
+    return database_update_position(
+        db,
+        id,
+        position
+    );
+}

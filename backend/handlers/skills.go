@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 )
+import "strconv"
 
 type SkillResponse struct {
 	ID       uint64  `json:"id"`
@@ -20,10 +21,25 @@ type CreateSkillRequest struct {
 	Description string  `json:"description"`
 	Weight      float32 `json:"weight"`
 	Progress    float32 `json:"progress"`
+	ParentID    uint64  `json:"parentId"`
 }
 
 type UpdateProgressRequest struct {
 	Progress float32 `json:"progress"`
+}
+
+type UpdateSkillRequest struct {
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Weight      float32 `json:"weight"`
+}
+
+type UpdateParentRequest struct {
+	ParentID int64 `json:"parentId"`
+}
+
+type UpdatePositionRequest struct {
+	Position int `json:"position"`
 }
 
 func GetSkillHandler(
@@ -118,6 +134,7 @@ func CreateSkillHandler(
 		request.Description,
 		request.Weight,
 		request.Progress,
+		request.ParentID,
 	)
 
 	if !created {
@@ -202,6 +219,64 @@ func UpdateProgressHandler(
 	)
 }
 
+func UpdateSkillHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	id, err := strconv.ParseUint(
+		r.PathValue("id"),
+		10,
+		64,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid skill ID",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	var request UpdateSkillRequest
+
+	err = json.NewDecoder(
+		r.Body,
+	).Decode(&request)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid JSON",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	success := engine.UpdateSkill(
+		id,
+		request.Name,
+		request.Description,
+		request.Weight,
+	)
+
+	if !success {
+		http.Error(
+			w,
+			"Failed to update skill",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	json.NewEncoder(w).Encode(request)
+}
+
 func DeleteSkillHandler(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -237,4 +312,150 @@ func DeleteSkillHandler(
 	w.WriteHeader(
 		http.StatusNoContent,
 	)
+}
+
+func DailyProgressHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	idString := r.PathValue("id")
+
+	id, err := strconv.ParseUint(
+		idString,
+		10,
+		64,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid skill ID",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	success := engine.AddDailyProgress(id)
+
+	if !success {
+		http.Error(
+			w,
+			"Already practiced today or failed",
+			http.StatusConflict,
+		)
+		return
+	}
+
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	json.NewEncoder(w).Encode(
+		map[string]interface{}{
+			"success": true,
+		},
+	)
+}
+
+func UpdateSkillParentHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	idString := r.PathValue("id")
+
+	id, err := strconv.ParseUint(
+		idString,
+		10,
+		64,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid skill ID",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	var request UpdateParentRequest
+
+	err = json.NewDecoder(
+		r.Body,
+	).Decode(&request)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid JSON",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if !engine.UpdateSkillParent(
+		id,
+		request.ParentID,
+	) {
+		http.Error(
+			w,
+			"Failed to update parent",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func UpdateSkillPositionHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	idString := r.PathValue("id")
+
+	id, err := strconv.ParseUint(
+		idString,
+		10,
+		64,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid skill ID",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	var request UpdatePositionRequest
+
+	err = json.NewDecoder(
+		r.Body,
+	).Decode(&request)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid JSON",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if !engine.UpdateSkillPosition(
+		id,
+		request.Position,
+	) {
+		http.Error(
+			w,
+			"Failed to update position",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
